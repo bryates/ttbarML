@@ -2,11 +2,12 @@ import torch.nn as nn
 import torch 
 
 cost =  nn.MSELoss(reduction='mean')#reduction='sum')
+huber = nn.SmoothL1Loss()
 
 class Net(nn.Module):
     def __init__(self, features, feature_division, device):
         super().__init__()
-        initial_neurons = 4
+        initial_neurons = 64
         self.main_module = nn.Sequential( 
             #nn.Linear(features, 32),
             #nn.ReLU(True),
@@ -17,14 +18,21 @@ class Net(nn.Module):
             #nn.Linear(8, 1),
             #nn.Sigmoid(),
             nn.Linear(features-feature_division, initial_neurons),#32),  # Input layer with 27 inputs and 64 neurons
+            #nn.BatchNorm1d(initial_neurons),
             #nn.Sigmoid(),          # Activation function
-            nn.LeakyReLU(0.2),
-            #nn.ReLU(),          # Activation function
-            nn.Linear(initial_neurons, initial_neurons//2),#32, 16),  # Hidden layer with 32 neurons
-            #nn.Sigmoid(),          # Activation function
-            nn.LeakyReLU(0.2),
-            #nn.ReLU(),
-            nn.Linear(initial_neurons//2, feature_division) #16, feature_division)    # Output layer with 3 outputs (for the target values
+            #nn.LeakyReLU(0.2),
+            nn.ReLU(),          # Activation function
+            nn.Linear(initial_neurons, initial_neurons//2),#32, 16),  # hidden layer with 32 neurons
+            #nn.BatchNorm1d(initial_neurons//2),
+            #nn.Sigmoid(),          # activation function
+            #nn.LeakyReLU(0.2),
+            nn.ReLU(),
+            nn.Linear(initial_neurons//2, initial_neurons//4),#32, 16),  # hidden layer with 32 neurons
+            #nn.BatchNorm1d(initial_neurons//2),
+            #nn.Sigmoid(),          # activation function
+            #nn.LeakyReLU(0.2),
+            nn.ReLU(),
+            nn.Linear(initial_neurons//4, feature_division) #16, feature_division)    # Output layer with 3 outputs (for the target values
         )
         self.main_module.to(device)
         self.main_module.type(torch.float64)
@@ -41,6 +49,7 @@ class Model:
         device: device used to train the neural network
         '''
         self.net  = Net(features, feature_division, device=device)
+        #self.net  = MomentumGNN(features, hidden_dim=32)
         #self.bkg  = torch.tensor([0], device=device, dtype=torch.float64)
         #self.sgnl = torch.tensor([1], device=device, dtype=torch.float64)
 
@@ -83,6 +92,48 @@ class Model:
         #print(f'In model net={self.net(features)[0]} targerts={targets[:][0].detach().cpu().numpy()} cost={cost(self.net(features), targets).detach().cpu().numpy()}')
         #print(f'In model net={self.net(features)[0]} targerts={targets[:][0].detach().cpu().numpy()} cost={torch.mean(torch.square(self.net(features)[:,0] - targets[:,0])).detach().cpu().numpy()}')
         #return torch.mean(torch.square(self.net(features)[:,0] - targets[:,0]))
-        return torch.mean(torch.square(self.net(features)[:,0] - targets[:,0]))
+        tpx = targets[:,0]
+        tpy = targets[:,1]
+        tpz = targets[:,2]
+        tpe = targets[:,3]
+        npx = self.net(features)[:,0]
+        npy = self.net(features)[:,1]
+        npz = self.net(features)[:,2]
+        npe = self.net(features)[:,3]
+        #return torch.mean(torch.square(tpx - npx)) + torch.mean(torch.square(tpy - npy)) + torch.mean(torch.square(tpz - npz))
+#lepton1_px,lepton1_py,lepton1_pz,lepton2_pt,lepton2_py,lepton2_pz,jet1_px,jet1_py,jet1_pz,jet2_px,jet2_py,jet2_pz,jet3_px,jet3_py,jet3_pz,jet4_px,jet4_py,jet4_pz,met_px,met_py
+        #px = pred[:,1] + pred[:,3] + pred[:,6] + pred[:,9] + pred[:,12] + pred[:,15] + pred[:,18] + pred[:,19]
+        return huber(self.net(features), targets)# + 0.01*huber(torch.sqrt((torch.square(tpe) - torch.square(tpx) - torch.square(tpy) - torch.square(tpz))), torch.sqrt((torch.square(npe) - torch.square(npx) - torch.square(npy) - torch.square(npz))))
         #return cost(self.net(features), targets)
-        #return cost(self.net(features).ravel(), targets)
+
+'''
+
+import torch.nn as nn
+from torch_geometric.nn import GCNConv, global_mean_pool
+
+class MomentumGNN(nn.Module):
+    def __init__(self, in_features, hidden_dim, out_features=4, num_layers=3):
+        super(MomentumGNN, self).__init__()
+        self.num_layers = num_layers
+        
+        # First GCN layer
+        self.convs = nn.ModuleList([GCNConv(in_features, hidden_dim)])
+        
+        # Hidden GCN layers
+        for _ in range(num_layers - 2):
+            self.convs.append(GCNConv(hidden_dim, hidden_dim))
+        
+        # Output GCN layer
+        self.convs.append(GCNConv(hidden_dim, out_features))
+        
+    def forward(self, data):
+        x, edge_index = data.x, data.edge_index  # Node features and edge connections
+        
+        for conv in self.convs[:-1]:
+            x = conv(x, edge_index)
+            x = F.relu(x)
+        
+        x = self.convs[-1](x, edge_index)  # Final layer (no activation)
+        return x  # Output: predicted four-momentum (px, py, pz, E)
+
+'''

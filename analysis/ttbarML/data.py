@@ -70,12 +70,15 @@ class eftDataLoader( data.Dataset ):
             Open root file in uproot and load `Events`
             This is where I should load the p4 for leps, jets, MET, and gen tops
             '''
-            #tf = uproot.open( fil )
-            events = NanoEventsFactory.from_root(fil, schemaclass=NanoAODSchema).events()[:10]
+            tf = uproot.open( fil )
+            #events = NanoEventsFactory.from_root(fil, schemaclass=NanoAODSchema).events()
             #print(len(events))
-            #events = tf["Events"]
+            events = tf["Events"]
 
             if redoFeatures:
+                features =  events.arrays(self.feature_list, library='pandas').to_numpy()
+                outputs['features'] = np.append( outputs['features'], features, axis=0)
+                break
                 tops = events.GenPart
                 tops = tops[np.abs(tops.pdgId)==6]
                 ttbar_mask = (ak.num(events.Electron) + ak.num(events.Muon) == 2) & (ak.num(events.Jet) >= 4) & (ak.num(tops) >= 2)# & (ak.all(np.abs(tops.eta)<4))
