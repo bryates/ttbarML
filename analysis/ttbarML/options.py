@@ -17,7 +17,8 @@ def commonOptions():
     parser.add_argument("--feature-division", type=str, default="1", help="Comma-separated of WC in the sample (by order)")
     parser.add_argument("--forceRebuild", action="store_true", default=False, help="Force reproduction of torch tensors from rootfiles")
     parser.add_argument("--norm", action="store_true", default=False, help="Force reproduction of torch tensors from rootfiles")
-    parser.add_argument("--configuration-file", type=str, default=None, help="Load parameters from toml configuration file. The configuration file will be overriden by other command line options. The --name argument will always be taken from the command line option and the default")
+    parser.add_argument("--plots", action="store_true", default=False, help="plots")
+    parser.add_argument("--configuration-file", "-c", type=str, default=None, help="Load parameters from toml configuration file. The configuration file will be overriden by other command line options. The --name argument will always be taken from the command line option and the default")
     return parser
 
 
@@ -31,7 +32,7 @@ def parse(parser):
             config = yaml.safe_load(f.read())
     else:
         config = {}
-    config = {**config, **vars(args)}
+        config = {**config, **vars(args)}
 
     with open(f"config.yml","w") as f:
         f.write( yaml.dump(config)) 

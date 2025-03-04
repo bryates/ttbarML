@@ -11,6 +11,8 @@
 
 import torch
 import os
+import gc
+#import tracemalloc
 from torch.utils.data import DataLoader
 import numpy as np 
 from tqdm import tqdm
@@ -61,7 +63,7 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     ax.legend()
     if show: plt.show()
     fig.savefig(f'{label}/loss.png')
-    ax.set_yscale('log')
+    #ax.set_yscale('log')
     fig.savefig(f'{label}/loss_log.png')
     plt.clf()
     
@@ -129,7 +131,7 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     #plt.ylim(-0.5,0.5)
     ax.set_xlabel('Target Output', fontsize=12)
     ax.set_ylabel('Network Output', fontsize=12)
-    ax.legend()
+    #ax.legend()
     if show: plt.show()
     fig.savefig(f'{label}/net_out_px.png')
     plt.clf()
@@ -144,7 +146,7 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     '''
     ax.set_xlabel('Target Output', fontsize=12)
     ax.set_ylabel('Network Output', fontsize=12)
-    ax.legend()
+    #ax.legend()
     if show: plt.show()
     fig.savefig(f'{label}/net_out_py.png')
     plt.clf()
@@ -161,7 +163,7 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     #plt.ylim(-0.5,0.5)
     ax.set_xlabel('Target Output', fontsize=12)
     ax.set_ylabel('Network Output', fontsize=12)
-    ax.legend()
+    #ax.legend()
     if show: plt.show()
     fig.savefig(f'{label}/net_out_pz.png')
     plt.clf()
@@ -176,7 +178,7 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     '''
     ax.set_xlabel('Target Output', fontsize=12)
     ax.set_ylabel('Network Output', fontsize=12)
-    ax.legend()
+    #ax.legend()
     if show: plt.show()
     fig.savefig(f'{label}/net_out_energy.png')
     plt.clf()
@@ -403,15 +405,18 @@ def main():
     dataloader     = DataLoader(  torch.cat([train_targ,train_input], dim=1)  , batch_size=arg['batch_size'], shuffle=True)
 
     #test  = torch.nn.functional.normalize(test[:])
-    optimizer = optim.Adam(model.net.parameters(), lr=arg['learning_rate'], weight_decay=1e-4)
+    optimizer = optim.Adam(model.net.parameters(), lr=arg['learning_rate'])#1, weight_decay=1e-4)
     #optimizer = optim.SGD(model.net.parameters(), lr=arg.learning_rate, momentum=arg.momentum)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=arg['factor'], patience=arg['patience'])
-    loss_train = [model.cost_from_batch(train_targ, train_input, arg['device']).item()]
     #loss_train = [model.cost_from_batch(train[:,feature_division:], train[:,0:feature_division] , arg.device).item()]
-    loss_test  = [model.cost_from_batch(test_targ , test_input,  arg['device']).item()]
+
+    if args.plots:
+        loss_train = [model.cost_from_batch(train_targ, train_input, arg['device']).item()]
+        loss_test  = [model.cost_from_batch(test_targ , test_input,  arg['device']).item()]
     dead = []
     for epoch in tqdm(range(arg['epochs'])):
         #for i,(tops, features) in enumerate(dataloader):
+        #tracemalloc.start()
         for i,(features) in enumerate(dataloader):
             #print(f'{len(features)}')
             #print(f'Training {epoch=} on {features}')
@@ -429,14 +434,25 @@ def main():
             #print(loss.detach().cpu().numpy())
             loss.backward()
             optimizer.step()
-        loss_train.append( model.cost_from_batch(train_targ, train_input , arg['device']).item())
-        loss_test .append( model.cost_from_batch(test_targ , test_input,  arg['device']).item())
-        scheduler.step(loss_train[epoch])
-        if epoch%50==0: 
-            save_and_plot( model.net, loss_test, loss_train, f"test_epoch_{epoch}", test_input, test_targ, feature_division, norm_test, norm_test_targ)
-            #print(optimizer.param_groups[0]['lr'])
-            
-    save_and_plot( model.net, loss_test, loss_train, f"test_last", test_input, test_targ, feature_division, norm_test, norm_test_targ, show=True)
+            scheduler.step(loss)#loss_train[epoch])
+        if args.plots:
+            with torch.no_grad():
+                loss_train.append( model.cost_from_batch(train_targ, train_input , arg['device']).item())
+                loss_test .append( model.cost_from_batch(test_targ , test_input,  arg['device']).item())
+                if epoch%50==0: 
+                    save_and_plot( model.net, loss_test, loss_train, f"test_epoch_{epoch}", test_input, test_targ, feature_division, norm_test, norm_test_targ)
+                    #print(optimizer.param_groups[0]['lr'])
+        gc.collect()
+        '''
+        snapshot = tracemalloc.take_snapshot()
+        top_stats = snapshot.statistics('lineno')
+        for stat in top_stats[:10]:  # Show top memory-consuming lines
+            print(stat)
+        '''
+ 
+    if args.plots:
+        with torch.no_grad():
+            save_and_plot( model.net, loss_test, loss_train, f"test_last", test_input, test_targ, feature_division, norm_test, norm_test_targ, show=False)
     print(f'Found {100 * np.sum([x for x,_ in dead]) / np.sum([y for _,y in dead])}% dead neurons!')
     
 if __name__=="__main__":

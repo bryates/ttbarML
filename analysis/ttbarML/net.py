@@ -125,9 +125,10 @@ class Model:
 #lepton1_px,lepton1_py,lepton1_pz,lepton2_pt,lepton2_py,lepton2_pz,jet1_px,jet1_py,jet1_pz,jet2_px,jet2_py,jet2_pz,jet3_px,jet3_py,jet3_pz,jet4_px,jet4_py,jet4_pz,met_px,met_py
         #px = pred[:,1] + pred[:,3] + pred[:,6] + pred[:,9] + pred[:,12] + pred[:,15] + pred[:,18] + pred[:,19]
         #return huber(self.net(features), targets)# + huber(torch.sqrt((torch.square(tpe) - torch.square(tpx) - torch.square(tpy) - torch.square(tpz))), torch.sqrt((torch.square(npe) - torch.square(npx) - torch.square(npy) - torch.square(npz))))
-        return cost(self.net(features), targets)# + 0.1*((torch.mean(torch.square(tpe)) - torch.mean(torch.square(tpx)) - torch.mean(torch.square(tpy)) - torch.mean(torch.square(tpz))) - (torch.mean(torch.square(npe)) - torch.mean(torch.square(npx)) - torch.mean(torch.square(npy)) - torch.mean(torch.square(npz))))
+        #return cost(self.net(features), targets) + 0.1*((torch.mean(torch.square(tpe)) - torch.mean(torch.square(tpx)) - torch.mean(torch.square(tpy)) - torch.mean(torch.square(tpz))) - (torch.mean(torch.square(npe)) - torch.mean(torch.square(npx)) - torch.mean(torch.square(npy)) - torch.mean(torch.square(npz))))
         #return cost(self.net(features), targets) + 1*self.mmd(self.net(features), targets)# + 0.1*((torch.mean(torch.square(tpe)) - torch.mean(torch.square(tpx)) - torch.mean(torch.square(tpy)) - torch.mean(torch.square(tpz))) - (torch.mean(torch.square(npe)) - torch.mean(torch.square(npx)) - torch.mean(torch.square(npy)) - torch.mean(torch.square(npz))))
-        #return cost(self.net(features), targets) + torch.mean((torch.square(tpe) - torch.square(tpx) - torch.square(tpy) - torch.square(tpz)) - (torch.square(npe) - torch.square(npx) - torch.square(npy) - torch.square(npz)))
+        return cost(self.net(features), targets) + 0.1*torch.mean((torch.square(tpe) - torch.square(tpx) - torch.square(tpy) - torch.square(tpz)) - (torch.square(npe) - torch.square(npx) - torch.square(npy) - torch.square(npz)))
+        #return cost(self.net(features), targets) + 1*self.mmd(self.net(features), targets) + 0.1*torch.mean((torch.square(tpe) - torch.square(tpx) - torch.square(tpy) - torch.square(tpz)) - (torch.square(npe) - torch.square(npx) - torch.square(npy) - torch.square(npz)))
 
 '''
 
