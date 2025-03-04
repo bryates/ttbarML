@@ -14,7 +14,7 @@ def commonOptions():
     parser.add_argument("--name", type=str, default="", help="Name to store net.");
     parser.add_argument("--out_path", type=str, default=".", help="Name to store net.");
     parser.add_argument("--features", type=str, default="Lep1_pt,Lep2_pt,Lep1_eta,Lep2_eta,Lep2_phi,Lep2_phi,Jet1_pt,Jet1_eta,Jet1_phi,Jet2_pt,Jet2_eta,Jet2_phi,met_pt", help="Comma-separated of WC in the sample (by order)")
-    parser.add_argument("--feature_division", type=str, default="1", help="Comma-separated of WC in the sample (by order)")
+    parser.add_argument("--feature-division", type=str, default="1", help="Comma-separated of WC in the sample (by order)")
     parser.add_argument("--forceRebuild", action="store_true", default=False, help="Force reproduction of torch tensors from rootfiles")
     parser.add_argument("--norm", action="store_true", default=False, help="Force reproduction of torch tensors from rootfiles")
     parser.add_argument("--configuration-file", type=str, default=None, help="Load parameters from toml configuration file. The configuration file will be overriden by other command line options. The --name argument will always be taken from the command line option and the default")

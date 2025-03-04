@@ -15,6 +15,8 @@ from torch.utils.data import DataLoader
 import numpy as np 
 from tqdm import tqdm
 from torch import optim
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 #from analysis.ttbarML.options import handleOptions
 from options import handleOptions
@@ -113,13 +115,18 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     plt.clf()
 
     fig, ax = plt.subplots(1, 1, figsize=[12,7])
-    sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,0], net(test_input).detach().cpu().numpy()[:,0],
-                          alpha=0.5, label='px')
+    bins = np.linspace(-0.5, 0.5, 10)
+    bins = np.array([bins, bins])
+    #sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,0], net(test_input).detach().cpu().numpy()[:,0],
+    sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,0], net(test_input).detach().cpu().numpy()[:,0],
+                          alpha=0.5, label='px')#, bins=bins)
     '''
     bsm_hist,_,_ = ax.hist(net(test[0][3:]).ravel().detach().cpu().numpy(),
                            #weights=test[0][3:][0].detach().cpu().numpy(),
                            bins=bins, alpha=0.5, label='BSM', density=True)
     '''
+    #plt.xlim(-0.5,0.5)
+    #plt.ylim(-0.5,0.5)
     ax.set_xlabel('Target Output', fontsize=12)
     ax.set_ylabel('Network Output', fontsize=12)
     ax.legend()
@@ -127,8 +134,9 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     fig.savefig(f'{label}/net_out_px.png')
     plt.clf()
     fig, ax = plt.subplots(1, 1, figsize=[12,7])
-    sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,1], net(test_input).detach().cpu().numpy()[:,1],
-                          alpha=0.5, label='py')
+    #sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,1], net(test_input).detach().cpu().numpy()[:,1],
+    sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,1], net(test_input).detach().cpu().numpy()[:,1],
+                          alpha=0.5, label='py')#, bins=bins)
     '''
     bsm_hist,_,_ = ax.hist(net(test[0][3:]).ravel().detach().cpu().numpy(),
                            #weights=test[0][3:][0].detach().cpu().numpy(),
@@ -141,13 +149,16 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     fig.savefig(f'{label}/net_out_py.png')
     plt.clf()
     fig, ax = plt.subplots(1, 1, figsize=[12,7])
-    sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,2], net(test_input).detach().cpu().numpy()[:,2],
+    #sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,2], net(test_input).detach().cpu().numpy()[:,2],
+    sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,2], net(test_input).detach().cpu().numpy()[:,2],
                           alpha=0.5, label='pz')
     '''
     bsm_hist,_,_ = ax.hist(net(test[0][3:]).ravel().detach().cpu().numpy(),
                            #weights=test[0][3:][0].detach().cpu().numpy(),
                            bins=bins, alpha=0.5, label='BSM', density=True)
     '''
+    #plt.xlim(-0.5,0.5)
+    #plt.ylim(-0.5,0.5)
     ax.set_xlabel('Target Output', fontsize=12)
     ax.set_ylabel('Network Output', fontsize=12)
     ax.legend()
@@ -155,7 +166,8 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     fig.savefig(f'{label}/net_out_pz.png')
     plt.clf()
     fig, ax = plt.subplots(1, 1, figsize=[12,7])
-    sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,3], net(test_input).detach().cpu().numpy()[:,3],
+    #sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,3], net(test_input).detach().cpu().numpy()[:,3],
+    sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,3], net(test_input).detach().cpu().numpy()[:,3],
                           alpha=0.5, label='e')
     '''
     bsm_hist,_,_ = ax.hist(net(test[0][3:]).ravel().detach().cpu().numpy(),
@@ -171,7 +183,8 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     
     fig, ax = plt.subplots(1, 1, figsize=[12,7])
     
-    res_bins = np.linspace(-25, 25, 50)
+    res = net(test_input).detach().cpu().numpy()[:,0] - test_feat.detach().cpu().numpy()[:,0]
+    res_bins = np.linspace(np.min(res), np.max(res), 50)
     #for i in range(min(10, test_feat.shape[0])):
         #sm_hist  = ax.hist(test_feat[i].detach().cpu().numpy()[0]*norm_targ[0].detach().cpu().numpy()[0] - net(test_input[i]).detach().cpu().numpy()[0]*norm_test.detach().cpu().numpy()[0][0],
         #sm_hist  = ax.hist(test_feat[i].detach().cpu().numpy()[0] - net(test_input[i]).detach().cpu().numpy()[0],
@@ -182,6 +195,10 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
         #      f"{test_feat[0].detach().cpu().numpy()[0]=}",#*norm_targ[0].detach().cpu().numpy()[0]=}",
         #      f"{net(test_input[i]).detach().cpu().numpy()[0]=}",#*norm_test.detach().cpu().numpy()[0][0]=}",
         #      f"{test_feat[i].detach().cpu().numpy()[0]*norm_targ[0].detach().cpu().numpy()[0] - net(test_input[i]).detach().cpu().numpy()[0]*norm_test.detach().cpu().numpy()[0][0]=}")
+    #print(test_feat.detach().cpu().numpy()[:,0] - net(test_input).detach().cpu().numpy()[:,0])
+    #print(np.mean(test_feat.detach().cpu().numpy()[:,0] - net(test_input).detach().cpu().numpy()[:,0]))
+    #print(np.std(test_feat.detach().cpu().numpy()[:,0] - net(test_input).detach().cpu().numpy()[:,0]))
+    #sm_hist  = ax.hist(test_feat.detach().cpu().numpy()[:,0] - net(test_input).detach().cpu().numpy()[:,0],
     sm_hist  = ax.hist(test_feat.detach().cpu().numpy() - net(test_input).detach().cpu().numpy(),
                         bins=res_bins, alpha=0.5, label=['px','py','pz','e'])
     ax.set_xlabel('Residual', fontsize=12)
@@ -190,6 +207,20 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     fig.savefig(f'{label}/net_res.png')
     plt.clf()
     
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    res = net(test_input).detach().cpu().numpy()[:,0] / test_feat.detach().cpu().numpy()[:,0]
+    res_bins = np.linspace(np.min(res), np.max(res), 50)
+    res_bins = np.linspace(-5, 5, 50)
+    #sm_hist  = ax.hist([net(test_input).detach().cpu().numpy()[:,0], test_feat.detach().cpu().numpy()[:,0]],
+    #                   bins=res_bins, alpha=0.5, label=['pred', 'gen'], alpha=0.5)
+    sm_hist  = ax.hist(net(test_input).detach().cpu().numpy()[:,0],
+                       bins=res_bins, alpha=0.5, label='pred')
+    sm_hist  = ax.hist(test_feat.detach().cpu().numpy()[:,0],
+                       bins=res_bins, alpha=0.5, label='gen')
+    ax.set_xlabel('px', fontsize=12)
+    ax.legend()
+    if show: plt.show()
+    fig.savefig(f'{label}/comp_x.png')
     plt.close()
     
     '''
@@ -293,6 +324,7 @@ def main():
     from net import Model#, MomentumGNN
     #from models.net import Model
     model = Model(features = len(features.split(",")), feature_division = feature_division, device = device)
+    #model = Model(features = 8, feature_division = feature_division, device = device)
  
     # Register hooks for all ReLU layers
     for layer in model.net.modules():
@@ -309,7 +341,7 @@ def main():
     train_size = int(0.7 * dataset_size)
     train, test    = torch.utils.data.random_split( signal_dataset, [train_size, (dataset_size-train_size)], generator=torch.Generator().manual_seed(42))
     train, test    = torch.utils.data.random_split( signal_dataset, [train_size, (dataset_size-train_size)], generator=torch.Generator().manual_seed(0))
-    dataloader     = DataLoader(  train  , batch_size=arg['batch_size'], shuffle=True)
+    #dataloader     = DataLoader(  train  , batch_size=arg['batch_size'], shuffle=True)
 
     #normalize features
     mu,std = torch.mean(train[:]), torch.std(train[:])
@@ -335,9 +367,43 @@ def main():
         test_targ = test[:][:,:feature_division]
         test_input = test[:][:,feature_division:]
         norm_test_targ, norm_test_input = torch.ones_like(norm_test_targ), torch.ones_like(norm_test_targ)
+
+    train_targ_mean, train_targ_std = torch.mean(train_targ.T, dim=1).T, torch.std(train_targ.T, dim=1).T
+    train_input_mean, train_input_std = torch.mean(train_input.T, dim=1).T, torch.std(train_input.T, dim=1).T
+    test_targ_mean, test_targ_std = torch.mean(test_targ.T, dim=1).T, torch.std(test_targ.T, dim=1).T
+    test_input_mean, test_input_std = torch.mean(test_input.T, dim=1).T, torch.std(test_input.T, dim=1).T
+    train_targ = (train_targ - train_targ_mean) / train_targ_std
+    train_input = (train_input - train_input_mean) / train_input_std
+    test_targ = (test_targ - test_targ_mean) / test_targ_std
+    test_input = (test_input - test_input_mean) / test_input_std
+    '''
+    '''
+
+    '''
+    # Constants
+    mass = 172.76  # Top quark mass in GeV/c^2
+    num_quarks = 1000
     
+    # Generate random momentum (3D vector)
+    px = torch.randn(num_quarks)
+    py = torch.randn(num_quarks)
+    pz = torch.randn(num_quarks)
+    p = torch.sqrt(px**2 + py**2 + pz**2)  # Magnitude of momentum
+    
+    # Compute energy using E^2 = p^2 + m^2 (natural units, c=1)
+    energy = torch.sqrt(p**2 + mass**2)
+    
+    # Store as (E, px, py, pz)
+    top_quarks = torch.stack((px, py, pz, energy), dim=1)
+    train_targ = top_quarks = torch.stack((px, py, pz, energy), dim=1)
+    train_input = top_quarks = torch.stack((px, py, pz, energy), dim=1)
+    test_targ = top_quarks = torch.stack((px, py, pz, energy), dim=1)
+    test_input = top_quarks = torch.stack((px, py, pz, energy), dim=1)
+    '''
+    dataloader     = DataLoader(  torch.cat([train_targ,train_input], dim=1)  , batch_size=arg['batch_size'], shuffle=True)
+
     #test  = torch.nn.functional.normalize(test[:])
-    optimizer = optim.Adam(model.net.parameters(), lr=arg['learning_rate'])
+    optimizer = optim.Adam(model.net.parameters(), lr=arg['learning_rate'], weight_decay=1e-4)
     #optimizer = optim.SGD(model.net.parameters(), lr=arg.learning_rate, momentum=arg.momentum)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=arg['factor'], patience=arg['patience'])
     loss_train = [model.cost_from_batch(train_targ, train_input, arg['device']).item()]

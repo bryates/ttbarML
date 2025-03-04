@@ -1,5 +1,5 @@
 from torch.utils.data import DataLoader
-from coffea.nanoevents import NanoEventsFactory, NanoAODSchema
+#from coffea.nanoevents import NanoEventsFactory, NanoAODSchema
 
 import torch.utils.data as data
 import numpy as np 
@@ -18,7 +18,7 @@ class eftDataLoader( data.Dataset ):
         #self.files   = [args['files']]
         self.files   = glob.glob(args['files'])
         #print(self.files)
-        self.dtype   = np.float64
+        self.dtype   = np.float32
         
         self.feature_list  = args['features'].split(',')
         #print(self.feature_list)

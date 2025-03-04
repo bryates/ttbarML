@@ -18,24 +18,24 @@ class Net(nn.Module):
             #nn.Linear(8, 1),
             #nn.Sigmoid(),
             nn.Linear(features-feature_division, initial_neurons),#32),  # Input layer with 27 inputs and 64 neurons
-            #nn.BatchNorm1d(initial_neurons),
+            nn.BatchNorm1d(initial_neurons),
             #nn.Sigmoid(),          # Activation function
-            #nn.LeakyReLU(0.2),
-            nn.ReLU(),          # Activation function
+            nn.LeakyReLU(0.2),
+            #nn.ReLU(),          # Activation function
             nn.Linear(initial_neurons, initial_neurons//2),#32, 16),  # hidden layer with 32 neurons
-            #nn.BatchNorm1d(initial_neurons//2),
+            nn.BatchNorm1d(initial_neurons//2),
             #nn.Sigmoid(),          # activation function
-            #nn.LeakyReLU(0.2),
-            nn.ReLU(),
+            nn.LeakyReLU(0.2),
+            #nn.ReLU(),
             nn.Linear(initial_neurons//2, initial_neurons//4),#32, 16),  # hidden layer with 32 neurons
-            #nn.BatchNorm1d(initial_neurons//2),
+            nn.BatchNorm1d(initial_neurons//4),
             #nn.Sigmoid(),          # activation function
-            #nn.LeakyReLU(0.2),
-            nn.ReLU(),
-            nn.Linear(initial_neurons//4, feature_division) #16, feature_division)    # Output layer with 3 outputs (for the target values
+            nn.LeakyReLU(0.2),
+            #nn.ReLU(),
+            nn.Linear(initial_neurons//4, feature_division), #16, feature_division)    # Output layer with 3 outputs (for the target values
         )
         self.main_module.to(device)
-        self.main_module.type(torch.float64)
+        self.main_module.type(torch.float32)
 
 
     def forward(self, x):
@@ -52,6 +52,27 @@ class Model:
         #self.net  = MomentumGNN(features, hidden_dim=32)
         #self.bkg  = torch.tensor([0], device=device, dtype=torch.float64)
         #self.sgnl = torch.tensor([1], device=device, dtype=torch.float64)
+
+
+    def gaussian_kernel(self, x, y, sigma=1.0):
+        """Computes the Gaussian (RBF) kernel matrix."""
+        x_size = x.size(0)
+        y_size = y.size(0)
+        dim = x.size(1)
+        
+        x = x.unsqueeze(1)  # Shape: (x_size, 1, dim)
+        y = y.unsqueeze(0)  # Shape: (1, y_size, dim)
+        
+        squared_diff = (x - y).pow(2).sum(2)  # Squared Euclidean distance
+        return torch.exp(-squared_diff / (2 * sigma ** 2))
+
+    def mmd(self, x, y, sigma=1.0):
+        """Computes the Maximum Mean Discrepancy (MMD) between two sets of samples."""
+        k_xx = self.gaussian_kernel(x, x, sigma).mean()
+        k_yy = self.gaussian_kernel(y, y, sigma).mean()
+        k_xy = self.gaussian_kernel(x, y, sigma).mean()
+        return k_xx + k_yy - 2 * k_xy  # MMD^2
+
 
     def cost_from_batch(self, targets, features, device ):
         '''
@@ -103,8 +124,10 @@ class Model:
         #return torch.mean(torch.square(tpx - npx)) + torch.mean(torch.square(tpy - npy)) + torch.mean(torch.square(tpz - npz))
 #lepton1_px,lepton1_py,lepton1_pz,lepton2_pt,lepton2_py,lepton2_pz,jet1_px,jet1_py,jet1_pz,jet2_px,jet2_py,jet2_pz,jet3_px,jet3_py,jet3_pz,jet4_px,jet4_py,jet4_pz,met_px,met_py
         #px = pred[:,1] + pred[:,3] + pred[:,6] + pred[:,9] + pred[:,12] + pred[:,15] + pred[:,18] + pred[:,19]
-        return huber(self.net(features), targets)# + 0.01*huber(torch.sqrt((torch.square(tpe) - torch.square(tpx) - torch.square(tpy) - torch.square(tpz))), torch.sqrt((torch.square(npe) - torch.square(npx) - torch.square(npy) - torch.square(npz))))
-        #return cost(self.net(features), targets)
+        #return huber(self.net(features), targets)# + huber(torch.sqrt((torch.square(tpe) - torch.square(tpx) - torch.square(tpy) - torch.square(tpz))), torch.sqrt((torch.square(npe) - torch.square(npx) - torch.square(npy) - torch.square(npz))))
+        return cost(self.net(features), targets)# + 0.1*((torch.mean(torch.square(tpe)) - torch.mean(torch.square(tpx)) - torch.mean(torch.square(tpy)) - torch.mean(torch.square(tpz))) - (torch.mean(torch.square(npe)) - torch.mean(torch.square(npx)) - torch.mean(torch.square(npy)) - torch.mean(torch.square(npz))))
+        #return cost(self.net(features), targets) + 1*self.mmd(self.net(features), targets)# + 0.1*((torch.mean(torch.square(tpe)) - torch.mean(torch.square(tpx)) - torch.mean(torch.square(tpy)) - torch.mean(torch.square(tpz))) - (torch.mean(torch.square(npe)) - torch.mean(torch.square(npx)) - torch.mean(torch.square(npy)) - torch.mean(torch.square(npz))))
+        #return cost(self.net(features), targets) + torch.mean((torch.square(tpe) - torch.square(tpx) - torch.square(tpy) - torch.square(tpz)) - (torch.square(npe) - torch.square(npx) - torch.square(npy) - torch.square(npz)))
 
 '''
 
