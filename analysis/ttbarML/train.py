@@ -307,8 +307,7 @@ def main():
     arg['norm'] = args.norm
     arg['cores'] = args.cores
     features = args.features
-    feature_division = int(args.feature_division)
-    print(feature_division)
+    feature_division = args.feature_division
 
     # Now we decide how (if) we will use the gpu
     if device != 'cpu' and not torch.cuda.is_available():
@@ -318,7 +317,7 @@ def main():
     print(f'{device=}')
 
     # If we use the cpu we dont use the whole UI (at psi)
-    torch.set_num_threads(int(arg['cores']))#8)
+    torch.set_num_threads(arg['cores'])#8)
 
     # all the stuff below should be configurable in the future
     # we get the model = net + cost function
