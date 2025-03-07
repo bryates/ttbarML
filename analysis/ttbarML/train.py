@@ -51,22 +51,27 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
         test: test dataset
     '''
     try:
-        os.mkdir(f'{label}')
+        os.mkdir(f'ml_out')
     except:
         pass
-    torch.save(net, f'{label}/network.p')
-    torch.save(net.state_dict(), f'{label}/network_state_dict.p')
+    try:
+        os.mkdir(f'ml_out/{label}')
+    except:
+        pass
+    torch.save(net, f'ml_out/{label}/network.p')
+    torch.save(net.state_dict(), f'ml_out/{label}/network_state_dict.p')
     fig, ax = plt.subplots(1, 1, figsize=[8,8])
     
     ax.plot( range(len(loss_test)), loss_train, label="Training dataset")
     ax.plot( range(len(loss_test)), loss_test , label="Testing dataset")
     ax.legend()
     if show: plt.show()
-    fig.savefig(f'{label}/loss.png')
-    #ax.set_yscale('log')
-    fig.savefig(f'{label}/loss_log.png')
+    fig.savefig(f'ml_out/{label}/loss.png')
+    ax.set_yscale('log')
+    fig.savefig(f'ml_out/{label}/loss_log.png')
     plt.clf()
     
+    plt.close()
     fig, ax = plt.subplots(1, 1, figsize=[12,7])
     
     #print(f'Input values {test_input=}')
@@ -91,6 +96,7 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
         #sm_hist  = ax.scatter(test_feat[i].detach().cpu().numpy()[0]*norm_targ[0].detach().cpu().numpy()[0], net(test_input[i]).detach().cpu().numpy()[0]*norm_test.detach().cpu().numpy()[0][0],
         #print(f'Plotting {i} {test_feat[i].detach().cpu().numpy(), net(test_input[i]).detach().cpu().numpy()}')
         #sm_hist  = ax.scatter(test_feat[i].detach().cpu().numpy(), net(test_input[i]).detach().cpu().numpy(),
+    bins = np.linspace(-10, 10, 100)
     #sm_hist  = ax.scatter(test[0][0].detach().cpu().numpy(), net(test[0][3:]).ravel().detach().cpu().numpy()[0],
     #sm_hist,bins,_  = ax.scatter(test[0][0].detach().cpu().numpy(), net(test[0][3:]).ravel().detach().cpu().numpy()[0],
                            #weights=test[0][3:][0].detach().cpu().numpy(),
@@ -113,31 +119,38 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     ax.set_ylabel('Network Output', fontsize=12)
     ax.legend()
     if show: plt.show()
-    fig.savefig(f'{label}/net_out.png')
+    fig.savefig(f'ml_out/{label}/net_out.png')
     plt.clf()
 
+    plt.close()
     fig, ax = plt.subplots(1, 1, figsize=[12,7])
     bins = np.linspace(-0.5, 0.5, 10)
+    vals = test_feat.detach().cpu().numpy()[:,0]
+    bins = np.linspace(np.min(np.mean(vals) - 2*np.std(vals)), np.max(np.mean(vals) + 2*np.std(vals)), 100)
     bins = np.array([bins, bins])
-    #sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,0], net(test_input).detach().cpu().numpy()[:,0],
-    sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,0], net(test_input).detach().cpu().numpy()[:,0],
+    sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,0], net(test_input).detach().cpu().numpy()[:,0],
+    #sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,0], net(test_input).detach().cpu().numpy()[:,0],
                           alpha=0.5, label='px')#, bins=bins)
     '''
     bsm_hist,_,_ = ax.hist(net(test[0][3:]).ravel().detach().cpu().numpy(),
                            #weights=test[0][3:][0].detach().cpu().numpy(),
                            bins=bins, alpha=0.5, label='BSM', density=True)
     '''
-    #plt.xlim(-0.5,0.5)
-    #plt.ylim(-0.5,0.5)
+    plt.xlim(-10,10)
+    plt.ylim(-10,10)
     ax.set_xlabel('Target Output', fontsize=12)
     ax.set_ylabel('Network Output', fontsize=12)
     #ax.legend()
     if show: plt.show()
-    fig.savefig(f'{label}/net_out_px.png')
+    fig.savefig(f'ml_out/{label}/net_out_px.png')
     plt.clf()
+    plt.close()
     fig, ax = plt.subplots(1, 1, figsize=[12,7])
-    #sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,1], net(test_input).detach().cpu().numpy()[:,1],
-    sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,1], net(test_input).detach().cpu().numpy()[:,1],
+    vals = test_feat.detach().cpu().numpy()[:,1]
+    bins = np.linspace(np.min(np.mean(vals) - 2*np.std(vals)), np.max(np.mean(vals) + 2*np.std(vals)), 100)
+    bins = np.array([bins, bins])
+    sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,1], net(test_input).detach().cpu().numpy()[:,1],
+    #sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,1], net(test_input).detach().cpu().numpy()[:,1],
                           alpha=0.5, label='py')#, bins=bins)
     '''
     bsm_hist,_,_ = ax.hist(net(test[0][3:]).ravel().detach().cpu().numpy(),
@@ -148,12 +161,16 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     ax.set_ylabel('Network Output', fontsize=12)
     #ax.legend()
     if show: plt.show()
-    fig.savefig(f'{label}/net_out_py.png')
+    fig.savefig(f'ml_out/{label}/net_out_py.png')
     plt.clf()
+    plt.close()
     fig, ax = plt.subplots(1, 1, figsize=[12,7])
-    #sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,2], net(test_input).detach().cpu().numpy()[:,2],
-    sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,2], net(test_input).detach().cpu().numpy()[:,2],
-                          alpha=0.5, label='pz')
+    vals = test_feat.detach().cpu().numpy()[:,2]
+    bins = np.linspace(np.min(np.mean(vals) - 2*np.std(vals)), np.max(np.mean(vals) + 2*np.std(vals)), 100)
+    bins = np.array([bins, bins])
+    sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,2], net(test_input).detach().cpu().numpy()[:,2],
+    #sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,2], net(test_input).detach().cpu().numpy()[:,2],
+                          alpha=0.5, label='pz')#, bins=bins)
     '''
     bsm_hist,_,_ = ax.hist(net(test[0][3:]).ravel().detach().cpu().numpy(),
                            #weights=test[0][3:][0].detach().cpu().numpy(),
@@ -165,12 +182,59 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     ax.set_ylabel('Network Output', fontsize=12)
     #ax.legend()
     if show: plt.show()
-    fig.savefig(f'{label}/net_out_pz.png')
+    fig.savefig(f'ml_out/{label}/net_out_pz.png')
     plt.clf()
+    plt.close()
     fig, ax = plt.subplots(1, 1, figsize=[12,7])
-    #sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,3], net(test_input).detach().cpu().numpy()[:,3],
-    sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,3], net(test_input).detach().cpu().numpy()[:,3],
-                          alpha=0.5, label='e')
+    vals = test_feat.detach().cpu().numpy()[:,3]
+    bins = np.linspace(np.min(np.mean(vals) - 2*np.std(vals)), np.max(np.mean(vals) + 2*np.std(vals)), 100)
+    bins = np.array([bins, bins])
+    sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,3], net(test_input).detach().cpu().numpy()[:,3],
+    #sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,3], net(test_input).detach().cpu().numpy()[:,3],
+                          alpha=0.5, label='e')#, bins=bins)
+    '''
+    bsm_hist,_,_ = ax.hist(net(test[0][3:]).ravel().detach().cpu().numpy(),
+                           #weights=test[0][3:][0].detach().cpu().numpy(),
+                           bins=bins, alpha=0.5, label='BSM', density=True)
+    '''
+    ax.set_xlabel('Target Output', fontsize=12)
+    ax.set_ylabel('Network Output', fontsize=12)
+    ax.legend()
+    if show: plt.show()
+    fig.savefig(f'ml_out/{label}/net_out_energy.png')
+    plt.clf()
+
+    plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    bins = np.linspace(-1, 1, 10)
+    vals = test_feat.detach().cpu().numpy()[:,0]
+    pred = net(test_input).detach().cpu().numpy()[:,0]
+    bins = np.linspace(np.min(np.mean(vals) - 2*np.std(vals)), np.max(np.mean(vals) + 2*np.std(vals)), 10)
+    bins = np.array([bins, bins])
+    #sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,0], net(test_input).detach().cpu().numpy()[:,0],
+    sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,0], net(test_input).detach().cpu().numpy()[:,0],
+                          alpha=0.5, label='px', bins=bins)
+    '''
+    bsm_hist,_,_ = ax.hist(net(test[0][3:]).ravel().detach().cpu().numpy(),
+                           #weights=test[0][3:][0].detach().cpu().numpy(),
+                           bins=bins, alpha=0.5, label='BSM', density=True)
+    '''
+    #plt.xlim(-0.5,0.5)
+    #plt.ylim(-0.5,0.5)
+    ax.set_xlabel('Target Output', fontsize=12)
+    ax.set_ylabel('Network Output', fontsize=12)
+    ax.legend()
+    #if show: plt.show()
+    fig.savefig(f'ml_out/{label}/net_out_px2d.png')
+    plt.clf()
+    plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    vals = test_feat.detach().cpu().numpy()[:,1]
+    bins = np.linspace(np.min(np.mean(vals) - 2*np.std(vals)), np.max(np.mean(vals) + 2*np.std(vals)), 100)
+    bins = np.array([bins, bins])
+    #sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,1], net(test_input).detach().cpu().numpy()[:,1],
+    sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,1], net(test_input).detach().cpu().numpy()[:,1],
+                          alpha=0.5, label='py', bins=bins)
     '''
     bsm_hist,_,_ = ax.hist(net(test[0][3:]).ravel().detach().cpu().numpy(),
                            #weights=test[0][3:][0].detach().cpu().numpy(),
@@ -180,13 +244,55 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     ax.set_ylabel('Network Output', fontsize=12)
     #ax.legend()
     if show: plt.show()
-    fig.savefig(f'{label}/net_out_energy.png')
+    fig.savefig(f'ml_out/{label}/net_out_py2d.png')
+    plt.clf()
+    plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    vals = test_feat.detach().cpu().numpy()[:,2]
+    bins = np.linspace(np.min(np.mean(vals) - 2*np.std(vals)), np.max(np.mean(vals) + 2*np.std(vals)), 100)
+    bins = np.array([bins, bins])
+    #sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,2], net(test_input).detach().cpu().numpy()[:,2],
+    sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,2], net(test_input).detach().cpu().numpy()[:,2],
+                          alpha=0.5, label='pz', bins=bins)
+    '''
+    bsm_hist,_,_ = ax.hist(net(test[0][3:]).ravel().detach().cpu().numpy(),
+                           #weights=test[0][3:][0].detach().cpu().numpy(),
+                           bins=bins, alpha=0.5, label='BSM', density=True)
+    '''
+    #plt.xlim(-0.5,0.5)
+    #plt.ylim(-0.5,0.5)
+    ax.set_xlabel('Target Output', fontsize=12)
+    ax.set_ylabel('Network Output', fontsize=12)
+    #ax.legend()
+    if show: plt.show()
+    fig.savefig(f'ml_out/{label}/net_out_pz2d.png')
+    plt.clf()
+    plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    vals = test_feat.detach().cpu().numpy()[:,3]
+    bins = np.linspace(np.min(np.mean(vals) - 2*np.std(vals)), np.max(np.mean(vals) + 2*np.std(vals)), 100)
+    bins = np.array([bins, bins])
+    #sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,3], net(test_input).detach().cpu().numpy()[:,3],
+    sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,3], net(test_input).detach().cpu().numpy()[:,3],
+                          alpha=0.5, label='e', bins=bins)
+    '''
+    bsm_hist,_,_ = ax.hist(net(test[0][3:]).ravel().detach().cpu().numpy(),
+                           #weights=test[0][3:][0].detach().cpu().numpy(),
+                           bins=bins, alpha=0.5, label='BSM', density=True)
+    '''
+    ax.set_xlabel('Target Output', fontsize=12)
+    ax.set_ylabel('Network Output', fontsize=12)
+    #ax.legend()
+    if show: plt.show()
+    fig.savefig(f'ml_out/{label}/net_out_energy2d.png')
     plt.clf()
     
+    plt.close()
     fig, ax = plt.subplots(1, 1, figsize=[12,7])
     
     res = net(test_input).detach().cpu().numpy()[:,0] - test_feat.detach().cpu().numpy()[:,0]
     res_bins = np.linspace(np.min(res), np.max(res), 50)
+    res_bins = np.linspace(-5, 5, 50)
     #for i in range(min(10, test_feat.shape[0])):
         #sm_hist  = ax.hist(test_feat[i].detach().cpu().numpy()[0]*norm_targ[0].detach().cpu().numpy()[0] - net(test_input[i]).detach().cpu().numpy()[0]*norm_test.detach().cpu().numpy()[0][0],
         #sm_hist  = ax.hist(test_feat[i].detach().cpu().numpy()[0] - net(test_input[i]).detach().cpu().numpy()[0],
@@ -206,9 +312,10 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     ax.set_xlabel('Residual', fontsize=12)
     ax.legend()
     if show: plt.show()
-    fig.savefig(f'{label}/net_res.png')
+    fig.savefig(f'ml_out/{label}/net_res.png')
     plt.clf()
     
+    plt.close()
     fig, ax = plt.subplots(1, 1, figsize=[12,7])
     res = net(test_input).detach().cpu().numpy()[:,0] / test_feat.detach().cpu().numpy()[:,0]
     res_bins = np.linspace(np.min(res), np.max(res), 50)
@@ -222,7 +329,213 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     ax.set_xlabel('px', fontsize=12)
     ax.legend()
     if show: plt.show()
-    fig.savefig(f'{label}/comp_x.png')
+    fig.savefig(f'ml_out/{label}/comp_x.png')
+    plt.clf()
+    
+    plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    res = net(test_input).detach().cpu().numpy()[:,1]
+    #res_bins = np.linspace(np.min(res), np.max(res), 25)
+    #sm_hist  = ax.hist([net(test_input).detach().cpu().numpy()[:,0], test_feat.detach().cpu().numpy()[:,0]],
+    #                   bins=res_bins, alpha=0.5, label=['pred', 'gen'], alpha=0.5)
+    targ = net(test_input).detach().cpu().numpy()[:,3]
+    sm_hist  = ax.hist(net(test_input).detach().cpu().numpy()[:,1],
+                       bins=res_bins, alpha=0.5, label='pred')
+    sm_hist  = ax.hist(test_feat.detach().cpu().numpy()[:,1],
+                       bins=res_bins, alpha=0.5, label='gen')
+    ax.set_xlabel('py', fontsize=12)
+    ax.legend()
+    if show: plt.show()
+    fig.savefig(f'ml_out/{label}/comp_y.png')
+    plt.clf()
+    
+    plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    res = net(test_input).detach().cpu().numpy()[:,2]
+    #res_bins = np.linspace(np.min(res), np.max(res), 25)
+    #sm_hist  = ax.hist([net(test_input).detach().cpu().numpy()[:,0], test_feat.detach().cpu().numpy()[:,0]],
+    #                   bins=res_bins, alpha=0.5, label=['pred', 'gen'], alpha=0.5)
+    sm_hist  = ax.hist(net(test_input).detach().cpu().numpy()[:,2],
+                       bins=res_bins, alpha=0.5, label='pred')
+    sm_hist  = ax.hist(test_feat.detach().cpu().numpy()[:,2],
+                       bins=res_bins, alpha=0.5, label='gen')
+    ax.set_xlabel('pz', fontsize=12)
+    ax.legend()
+    if show: plt.show()
+    fig.savefig(f'ml_out/{label}/comp_z.png')
+    plt.clf()
+    
+    plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    res = net(test_input).detach().cpu().numpy()[:,3]
+    #res_bins = np.linspace(np.min(res), np.max(res), 25)
+    #sm_hist  = ax.hist([net(test_input).detach().cpu().numpy()[:,0], test_feat.detach().cpu().numpy()[:,0]],
+    #                   bins=res_bins, alpha=0.5, label=['pred', 'gen'], alpha=0.5)
+    sm_hist  = ax.hist(net(test_input).detach().cpu().numpy()[:,3],
+                       bins=res_bins, alpha=0.5, label='pred')
+    sm_hist  = ax.hist(test_feat.detach().cpu().numpy()[:,3],
+                       bins=res_bins, alpha=0.5, label='gen')
+    ax.set_xlabel('energy', fontsize=12)
+    ax.legend()
+    if show: plt.show()
+    fig.savefig(f'ml_out/{label}/comp_energy.png')
+    plt.clf()
+
+    plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    res  = net(test_input).detach().cpu().numpy()[:,0]
+    targ = test_feat.detach().cpu().numpy()[:,0]
+    bins = np.linspace(-.1, .1, 100)
+    ypred,_ = np.histogram(res, bins)
+    ytrue,_ = np.histogram(targ, bins)
+    norm_binned = [np.mean((res-targ)[np.where((targ > low) & (targ <= high))]) for low, high in zip(bins[:-1], bins[1:])]
+    #res_bins = np.linspace(np.min(res), np.max(res), 25)
+    #sm_hist  = ax.hist([net(test_input).detach().cpu().numpy()[:,0], test_feat.detach().cpu().numpy()[:,0]],
+    #                   bins=res_bins, alpha=0.5, label=['pred', 'gen'], alpha=0.5)
+    sm_hist  = ax.scatter(bins[:-1], norm_binned,
+                       alpha=0.5)
+    ax.set_xlabel('true px', fontsize=12)
+    ax.set_ylabel('$\\langle pred px - true px \\rangle$', fontsize=12)
+    #ax.legend()
+    if show: plt.show()
+    fig.savefig(f'ml_out/{label}/bias_px.png')
+    plt.clf()
+
+    plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    res  = net(test_input).detach().cpu().numpy()[:,1]
+    targ = test_feat.detach().cpu().numpy()[:,1]
+    bins = np.linspace(-.1, .1, 100)
+    ypred,_ = np.histogram(res, bins)
+    ytrue,_ = np.histogram(targ, bins)
+    norm_binned = [np.mean((res-targ)[np.where((targ > low) & (targ <= high))]) for low, high in zip(bins[:-1], bins[1:])]
+    #res_bins = np.linspace(np.min(res), np.max(res), 25)
+    #sm_hist  = ax.hist([net(test_input).detach().cpu().numpy()[:,0], test_feat.detach().cpu().numpy()[:,0]],
+    #                   bins=res_bins, alpha=0.5, label=['pred', 'gen'], alpha=0.5)
+    sm_hist  = ax.scatter(bins[:-1], norm_binned,
+                       alpha=0.5)
+    ax.set_xlabel('true py', fontsize=12)
+    ax.set_ylabel('$\\langle pred py - true py \\rangle$', fontsize=12)
+    #ax.legend()
+    if show: plt.show()
+    fig.savefig(f'ml_out/{label}/bias_py.png')
+    plt.clf()
+
+    plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    res  = net(test_input).detach().cpu().numpy()[:,2]
+    targ = test_feat.detach().cpu().numpy()[:,2]
+    bins = np.linspace(-.1, .1, 100)
+    ypred,_ = np.histogram(res, bins)
+    ytrue,_ = np.histogram(targ, bins)
+    norm_binned = [np.mean((res-targ)[np.where((targ > low) & (targ <= high))]) for low, high in zip(bins[:-1], bins[1:])]
+    #res_bins = np.linspace(np.min(res), np.max(res), 25)
+    #sm_hist  = ax.hist([net(test_input).detach().cpu().numpy()[:,0], test_feat.detach().cpu().numpy()[:,0]],
+    #                   bins=res_bins, alpha=0.5, label=['pred', 'gen'], alpha=0.5)
+    sm_hist  = ax.scatter(bins[:-1], norm_binned,
+                       alpha=0.5)
+    ax.set_xlabel('true pz', fontsize=12)
+    ax.set_ylabel('$\\langle pred pz - true pz \\rangle$', fontsize=12)
+    #ax.legend()
+    if show: plt.show()
+    fig.savefig(f'ml_out/{label}/bias_pz.png')
+    plt.clf()
+
+    plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    res  = net(test_input).detach().cpu().numpy()[:,3]
+    targ = test_feat.detach().cpu().numpy()[:,3]
+    bins = np.linspace(-.1, .1, 100)
+    ypred,_ = np.histogram(res, bins)
+    ytrue,_ = np.histogram(targ, bins)
+    norm_binned = [np.mean((res-targ)[np.where((targ > low) & (targ <= high))]) for low, high in zip(bins[:-1], bins[1:])]
+    #res_bins = np.linspace(np.min(res), np.max(res), 25)
+    #sm_hist  = ax.hist([net(test_input).detach().cpu().numpy()[:,0], test_feat.detach().cpu().numpy()[:,0]],
+    #                   bins=res_bins, alpha=0.5, label=['pred', 'gen'], alpha=0.5)
+    sm_hist  = ax.scatter(bins[:-1], norm_binned,
+                       alpha=0.5)
+    ax.set_xlabel('true energy', fontsize=12)
+    ax.set_ylabel('$\\langle pred energy - true energy \\rangle$', fontsize=12)
+    #ax.legend()
+    if show: plt.show()
+    fig.savefig(f'ml_out/{label}/bias_energy.png')
+    plt.clf()
+
+    plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    res  = net(test_input).detach().cpu().numpy()[:,0]
+    targ = test_feat.detach().cpu().numpy()[:,0]
+    bins = np.linspace(-1, 1, 100)
+    ypred,_ = np.histogram(res, bins)
+    ytrue,_ = np.histogram(targ, bins)
+    #res_bins = np.linspace(np.min(res), np.max(res), 25)
+    #sm_hist  = ax.hist([net(test_input).detach().cpu().numpy()[:,0], test_feat.detach().cpu().numpy()[:,0]],
+    #                   bins=res_bins, alpha=0.5, label=['pred', 'gen'], alpha=0.5)
+    sm_hist  = ax.hist(1 - np.square(ypred - ytrue) / np.square(ypred - np.mean(ytrue)),
+                       bins=bins, alpha=0.5)
+    ax.set_xlabel('R px', fontsize=12)
+    #ax.legend()
+    if show: plt.show()
+    fig.savefig(f'ml_out/{label}/R_px.png')
+    plt.clf()
+
+    plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    res  = net(test_input).detach().cpu().numpy()[:,0]
+    targ = test_feat.detach().cpu().numpy()[:,0]
+    sm_hist  = ax.hist(np.power(res - targ, 2),
+                       bins=np.linspace(0, 1, 100), alpha=0.5, label='MSE px')
+    ax.set_xlabel('MSE px', fontsize=12)
+    #ax.legend()
+    if show: plt.show()
+    fig.savefig(f'ml_out/{label}/mse_px.png')
+    plt.clf()
+
+    plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    res  = net(test_input).detach().cpu().numpy()[:,1]
+    targ = test_feat.detach().cpu().numpy()[:,1]
+    #res_bins = np.linspace(np.min(res), np.max(res), 25)
+    #sm_hist  = ax.hist([net(test_input).detach().cpu().numpy()[:,0], test_feat.detach().cpu().numpy()[:,0]],
+    #                   bins=res_bins, alpha=0.5, label=['pred', 'gen'], alpha=0.5)
+    sm_hist  = ax.hist(np.power(res - targ, 2),
+                       bins=np.linspace(0, 1, 100), alpha=0.5, label='MSE py')
+    ax.set_xlabel('MSE px', fontsize=12)
+    ax.legend()
+    if show: plt.show()
+    fig.savefig(f'ml_out/{label}/mse_py.png')
+    plt.clf()
+
+    plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    res  = net(test_input).detach().cpu().numpy()[:,2]
+    targ = test_feat.detach().cpu().numpy()[:,2]
+    #res_bins = np.linspace(np.min(res), np.max(res), 25)
+    #sm_hist  = ax.hist([net(test_input).detach().cpu().numpy()[:,0], test_feat.detach().cpu().numpy()[:,0]],
+    #                   bins=res_bins, alpha=0.5, label=['pred', 'gen'], alpha=0.5)
+    sm_hist  = ax.hist(np.power(res - targ, 2),
+                       bins=np.linspace(0, 1, 100), alpha=0.5, label='MSE pz')
+    ax.set_xlabel('MSE px', fontsize=12)
+    ax.legend()
+    if show: plt.show()
+    fig.savefig(f'ml_out/{label}/mse_pz.png')
+    plt.clf()
+
+    plt.close()
+    fig, ax = plt.subplots(1, 1, figsize=[12,7])
+    res  = net(test_input).detach().cpu().numpy()[:,3]
+    targ = test_feat.detach().cpu().numpy()[:,3]
+    #res_bins = np.linspace(np.min(res), np.max(res), 25)
+    #sm_hist  = ax.hist([net(test_input).detach().cpu().numpy()[:,0], test_feat.detach().cpu().numpy()[:,0]],
+    #                   bins=res_bins, alpha=0.5, label=['pred', 'gen'], alpha=0.5)
+    sm_hist  = ax.hist(np.power(res - targ, 2),
+                       bins=np.linspace(0, 1, 100), alpha=0.5, label='MSE energy')
+    ax.set_xlabel('MSE energy', fontsize=12)
+    ax.legend()
+    if show: plt.show()
+    fig.savefig(f'ml_out/{label}/mse_energy.png')
+    plt.clf()
+
     plt.close()
     
     '''
@@ -234,7 +547,7 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     ax.legend()
     ax.set_xlabel('False Positive Rate', fontsize=14)
     ax.set_ylabel('True Positive Rate', fontsize=14)
-    fig.savefig(f'{label}/ROC.png')
+    fig.savefig(f'ml_out/{label}/ROC.png')
     plt.clf()
     
     fig, ax = plt.subplots(1, 1, figsize=[8,8])
@@ -245,7 +558,7 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     ax.set_ylabel('True Positive Rate', fontsize=14)
     ax.set_xscale('log')
     ax.set_yscale('log')
-    fig.savefig(f'{label}/ROC_log.png')
+    fig.savefig(f'ml_out/{label}/ROC_log.png')
     plt.clf()
     
     plt.close()
@@ -289,7 +602,7 @@ def main():
     batch_size = 64
     epochs = 200
     learning_rate = 0.05
-    factor = 0.1
+    factor = 0.01
     patience = 10
     norm = True
     arg['files'] = args.files
@@ -299,12 +612,13 @@ def main():
     arg['features'] = args.features
     arg['feature_division'] = args.feature_division
     arg['forceRebuild'] = args.forceRebuild
-    arg['batch_size'] = args.batch_size*4
+    arg['batch_size'] = args.batch_size
     arg['epochs'] = args.epochs
     arg['learning_rate'] = args.learning_rate
     arg['factor'] = args.factor
     arg['patience'] = args.patience
     arg['norm'] = args.norm
+    arg['profile'] = args.profile
     arg['cores'] = args.cores
     features = args.features
     feature_division = args.feature_division
@@ -377,7 +691,12 @@ def main():
     train_input = (train_input - train_input_mean) / train_input_std
     test_targ = (test_targ - test_targ_mean) / test_targ_std
     test_input = (test_input - test_input_mean) / test_input_std
+
     '''
+    train_targ[:,3] = train_targ[:,3] + train_targ_mean[3] /  train_targ_std[3]
+    train_input[:,3] = train_input[:,3] + train_input_mean[3] /  train_input_std[3]
+    test_targ[:,3] = test_targ[:,3] + test_targ_mean[3] /  test_targ_std[3]
+    test_input[:,3] = test_input[:,3] + test_input_mean[3] /  test_input_std[3]
     '''
 
     '''
@@ -404,10 +723,11 @@ def main():
     dataloader     = DataLoader(  torch.cat([train_targ,train_input], dim=1)  , batch_size=arg['batch_size'], shuffle=True)
 
     #test  = torch.nn.functional.normalize(test[:])
-    optimizer = optim.Adam(model.net.parameters(), lr=arg['learning_rate'])#1, weight_decay=1e-4)
+    optimizer = optim.Adam(model.net.parameters(), lr=arg['learning_rate'])#, weight_decay=1e-4)
     #optimizer = optim.SGD(model.net.parameters(), lr=arg.learning_rate, momentum=arg.momentum)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=arg['factor'], patience=arg['patience'])
-    #loss_train = [model.cost_from_batch(train[:,feature_division:], train[:,0:feature_division] , arg.device).item()]
+    #loss_train = [model.cost_from_batch(train_targ, train_input, arg['device']).item()]
+    #loss_test  = [model.cost_from_batch(test_targ , test_input,  arg['device']).item()]
 
     if args.plots:
         loss_train = [model.cost_from_batch(train_targ, train_input, arg['device']).item()]
@@ -433,15 +753,20 @@ def main():
             #print(loss.detach().cpu().numpy())
             loss.backward()
             optimizer.step()
-            scheduler.step(loss)#loss_train[epoch])
+        #loss_train.append( model.cost_from_batch(train_targ, train_input , arg['device']).item())
+        #loss_test .append( model.cost_from_batch(test_targ , test_input,  arg['device']).item())
+        scheduler.step(loss_train[epoch])
+        #if epoch%50==0:
+        #    if arg['profile']: print(f'Found {100 * np.sum([x for x,_ in dead[-1]]) / np.sum([y for _,y in dead[-1]])}% dead neurons!')
+        #    save_and_plot( model.net, loss_test, loss_train, f"test_epoch_{epoch}", test_input, test_targ, feature_division, norm_test, norm_test_targ, show=True)
         if args.plots:
-            with torch.no_grad():
+            #with torch.no_grad():
                 loss_train.append( model.cost_from_batch(train_targ, train_input , arg['device']).item())
                 loss_test .append( model.cost_from_batch(test_targ , test_input,  arg['device']).item())
                 if epoch%50==0: 
                     save_and_plot( model.net, loss_test, loss_train, f"test_epoch_{epoch}", test_input, test_targ, feature_division, norm_test, norm_test_targ)
                     #print(optimizer.param_groups[0]['lr'])
-        gc.collect()
+        #gc.collect()
         '''
         snapshot = tracemalloc.take_snapshot()
         top_stats = snapshot.statistics('lineno')
@@ -449,10 +774,12 @@ def main():
             print(stat)
         '''
  
-    if args.plots:
-        with torch.no_grad():
-            save_and_plot( model.net, loss_test, loss_train, f"test_last", test_input, test_targ, feature_division, norm_test, norm_test_targ, show=False)
-    print(f'Found {100 * np.sum([x for x,_ in dead]) / np.sum([y for _,y in dead])}% dead neurons!')
+    save_and_plot( model.net, loss_test, loss_train, f"test_last", test_input, test_targ, feature_division, norm_test, norm_test_targ, show=False)
+    save_and_plot( model.net, loss_test, loss_train, f"train_last", train_input, train_targ, feature_division, norm_test, norm_test_targ, show=False)
+    #if args.plots:
+    #    with torch.no_grad():
+    #        save_and_plot( model.net, loss_test, loss_train, f"test_last", test_input, test_targ, feature_division, norm_test, norm_test_targ, show=False)
+    if arg['profile']: print(f'Found {100 * np.sum([x for x,_ in dead]) / np.sum([y for _,y in dead])}% dead neurons!')
     
 if __name__=="__main__":
     main()
