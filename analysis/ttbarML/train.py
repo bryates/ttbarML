@@ -760,7 +760,7 @@ def main():
         #    if arg['profile']: print(f'Found {100 * np.sum([x for x,_ in dead[-1]]) / np.sum([y for _,y in dead[-1]])}% dead neurons!')
         #    save_and_plot( model.net, loss_test, loss_train, f"test_epoch_{epoch}", test_input, test_targ, feature_division, norm_test, norm_test_targ, show=True)
         if args.plots:
-            #with torch.no_grad():
+            with torch.no_grad():
                 loss_train.append( model.cost_from_batch(train_targ, train_input , arg['device']).item())
                 loss_test .append( model.cost_from_batch(test_targ , test_input,  arg['device']).item())
                 if epoch%50==0: 

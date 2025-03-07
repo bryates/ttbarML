@@ -84,7 +84,7 @@ class Model:
         sm_mean: mean of the background weights
         bsm_mean: mean of the signal weights
         '''
-        half_length = features.size(0) // 2
+        #half_length = features.size(0) // 2
         #print(self.bkg.expand(1, half_length).shape, self.sgnl.expand(1, features.size(0) - half_length).shape)
 
         #cost.weight = torch.ones_like(features.T[0])
@@ -104,7 +104,7 @@ class Model:
         #targets     = torch.cat([self.bkg.expand(1, half_length), self.sgnl.expand(1, features.size(0) - half_length)], axis=1).ravel()
         
         #print(self.net(features).detach().cpu().numpy(), targets.detach().cpu().numpy())
-        pred = self.net(features)
+        #pred = self.net(features)
         # prediction: pt = 0, eta = 1, phi = 2, pz = 3, mass = 4, energy = 5
         # targets:    pt = 0, eta = 1, phi = 2, pz = 3, mass = 4, energy = 5
                                 #0          1          2         3           4           5
@@ -115,14 +115,14 @@ class Model:
         #print(f'In model net={self.net(features)[0]} targerts={targets[:][0].detach().cpu().numpy()} cost={cost(self.net(features), targets).detach().cpu().numpy()}')
         #print(f'In model net={self.net(features)[0]} targerts={targets[:][0].detach().cpu().numpy()} cost={torch.mean(torch.square(self.net(features)[:,0] - targets[:,0])).detach().cpu().numpy()}')
         #return torch.mean(torch.square(self.net(features)[:,0] - targets[:,0]))
-        tpx = targets[:,0]
-        tpy = targets[:,1]
-        tpz = targets[:,2]
-        tpe = targets[:,3]
-        npx = self.net(features)[:,0]
-        npy = self.net(features)[:,1]
-        npz = self.net(features)[:,2]
-        npe = self.net(features)[:,3]
+        #tpx = targets[:,0]
+        #tpy = targets[:,1]
+        #tpz = targets[:,2]
+        #tpe = targets[:,3]
+        #npx = self.net(features)[:,0]
+        #npy = self.net(features)[:,1]
+        #npz = self.net(features)[:,2]
+        #npe = self.net(features)[:,3]
         #return torch.mean(torch.square(tpx - npx)) + torch.mean(torch.square(tpy - npy)) + torch.mean(torch.square(tpz - npz))
 #lepton1_px,lepton1_py,lepton1_pz,lepton2_pt,lepton2_py,lepton2_pz,jet1_px,jet1_py,jet1_pz,jet2_px,jet2_py,jet2_pz,jet3_px,jet3_py,jet3_pz,jet4_px,jet4_py,jet4_pz,met_px,met_py
         #px = pred[:,1] + pred[:,3] + pred[:,6] + pred[:,9] + pred[:,12] + pred[:,15] + pred[:,18] + pred[:,19]
