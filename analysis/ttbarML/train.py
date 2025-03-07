@@ -102,13 +102,13 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
                            #weights=test[0][3:][0].detach().cpu().numpy(),
                            #alpha=0.5, label='SM')
                            #bins=100, alpha=0.5, label='SM', density=True)
-    sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,0], net(test_input).detach().cpu().numpy()[:,0],
+    sm_hist  = ax.scatter(test_feat.cpu().numpy()[:,0], net(test_input).detach().cpu().numpy()[:,0],
                           alpha=0.5, label='px')
-    sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,1], net(test_input).detach().cpu().numpy()[:,1],
+    sm_hist  = ax.scatter(test_feat.cpu().numpy()[:,1], net(test_input).detach().cpu().numpy()[:,1],
                           alpha=0.5, label='py')
-    sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,2], net(test_input).detach().cpu().numpy()[:,2],
+    sm_hist  = ax.scatter(test_feat.cpu().numpy()[:,2], net(test_input).detach().cpu().numpy()[:,2],
                           alpha=0.5, label='pz')
-    sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,3], net(test_input).detach().cpu().numpy()[:,3],
+    sm_hist  = ax.scatter(test_feat.cpu().numpy()[:,3], net(test_input).detach().cpu().numpy()[:,3],
                           alpha=0.5, label='e')
     '''
     bsm_hist,_,_ = ax.hist(net(test[0][3:]).ravel().detach().cpu().numpy(),
@@ -764,9 +764,9 @@ def main():
                 loss_train.append( model.cost_from_batch(train_targ, train_input , arg['device']).item())
                 loss_test .append( model.cost_from_batch(test_targ , test_input,  arg['device']).item())
                 if epoch%50==0: 
-                    save_and_plot( model.net, loss_test, loss_train, f"test_epoch_{epoch}", test_input, test_targ, feature_division, norm_test, norm_test_targ)
+                    save_and_plot( model.net, loss_test, loss_train, f"test_epoch_{epoch}", test_input.detach(), test_targ.detach(), feature_division, norm_test.detach(), norm_test_targ.detach())
                     #print(optimizer.param_groups[0]['lr'])
-        #gc.collect()
+        gc.collect()
         '''
         snapshot = tracemalloc.take_snapshot()
         top_stats = snapshot.statistics('lineno')
@@ -774,8 +774,8 @@ def main():
             print(stat)
         '''
  
-    save_and_plot( model.net, loss_test, loss_train, f"test_last", test_input, test_targ, feature_division, norm_test, norm_test_targ, show=False)
-    save_and_plot( model.net, loss_test, loss_train, f"train_last", train_input, train_targ, feature_division, norm_test, norm_test_targ, show=False)
+    save_and_plot( model.net, loss_test, loss_train, f"test_last", test_input.detach(), test_targ.detach(), feature_division, norm_test.detach(), norm_test_targ.detach(), show=False)
+    save_and_plot( model.net, loss_test, loss_train, f"train_last", train_input.detach(), train_targ.detach(), feature_division, norm_test.detach(), norm_test_targ.detach(), show=False)
     #if args.plots:
     #    with torch.no_grad():
     #        save_and_plot( model.net, loss_test, loss_train, f"test_last", test_input, test_targ, feature_division, norm_test, norm_test_targ, show=False)
