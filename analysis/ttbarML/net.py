@@ -2,12 +2,14 @@ import torch.nn as nn
 import torch 
 
 cost =  nn.MSELoss(reduction='mean')#reduction='sum')
+#cost =  nn.MSELoss(reduction='sum')
 huber = nn.SmoothL1Loss()
 
 class Net(nn.Module):
     def __init__(self, features, feature_division, device):
         super().__init__()
-        initial_neurons = 64
+        #initial_neurons = (features - feature_division)#//2
+        initial_neurons = 128#(features - feature_division)*2
         self.main_module = nn.Sequential( 
             #nn.Linear(features, 32),
             #nn.ReLU(True),
@@ -18,24 +20,24 @@ class Net(nn.Module):
             #nn.Linear(8, 1),
             #nn.Sigmoid(),
             nn.Linear(features-feature_division, initial_neurons),#32),  # Input layer with 27 inputs and 64 neurons
-            nn.BatchNorm1d(initial_neurons),
+            #nn.BatchNorm1d(initial_neurons),
             #nn.Sigmoid(),          # Activation function
-            nn.LeakyReLU(0.2),
-            #nn.ReLU(),          # Activation function
+            #nn.LeakyReLU(0.2),
+            nn.ReLU(),          # Activation function
             nn.Linear(initial_neurons, initial_neurons//2),#32, 16),  # hidden layer with 32 neurons
-            nn.BatchNorm1d(initial_neurons//2),
+            #nn.BatchNorm1d(initial_neurons//2),
             #nn.Sigmoid(),          # activation function
-            nn.LeakyReLU(0.2),
-            #nn.ReLU(),
+            #nn.LeakyReLU(0.2),
+            nn.ReLU(),
             nn.Linear(initial_neurons//2, initial_neurons//4),#32, 16),  # hidden layer with 32 neurons
-            nn.BatchNorm1d(initial_neurons//4),
+            #nn.BatchNorm1d(initial_neurons//4),
             #nn.Sigmoid(),          # activation function
-            nn.LeakyReLU(0.2),
-            #nn.ReLU(),
+            #nn.LeakyReLU(0.2),
+            nn.ReLU(),
             nn.Linear(initial_neurons//4, feature_division), #16, feature_division)    # Output layer with 3 outputs (for the target values
         )
         self.main_module.to(device)
-        self.main_module.type(torch.float32)
+        self.main_module.type(torch.float64)
 
 
     def forward(self, x):
@@ -127,7 +129,7 @@ class Model:
         #return huber(self.net(features), targets)# + huber(torch.sqrt((torch.square(tpe) - torch.square(tpx) - torch.square(tpy) - torch.square(tpz))), torch.sqrt((torch.square(npe) - torch.square(npx) - torch.square(npy) - torch.square(npz))))
         #return cost(self.net(features), targets) + 0.1*((torch.mean(torch.square(tpe)) - torch.mean(torch.square(tpx)) - torch.mean(torch.square(tpy)) - torch.mean(torch.square(tpz))) - (torch.mean(torch.square(npe)) - torch.mean(torch.square(npx)) - torch.mean(torch.square(npy)) - torch.mean(torch.square(npz))))
         #return cost(self.net(features), targets) + 1*self.mmd(self.net(features), targets)# + 0.1*((torch.mean(torch.square(tpe)) - torch.mean(torch.square(tpx)) - torch.mean(torch.square(tpy)) - torch.mean(torch.square(tpz))) - (torch.mean(torch.square(npe)) - torch.mean(torch.square(npx)) - torch.mean(torch.square(npy)) - torch.mean(torch.square(npz))))
-        return cost(self.net(features), targets) + 0.1*torch.mean((torch.square(tpe) - torch.square(tpx) - torch.square(tpy) - torch.square(tpz)) - (torch.square(npe) - torch.square(npx) - torch.square(npy) - torch.square(npz)))
+        return cost(self.net(features), targets)# + 0.1*torch.mean((torch.square(tpe) - torch.square(tpx) - torch.square(tpy) - torch.square(tpz)) - (torch.square(npe) - torch.square(npx) - torch.square(npy) - torch.square(npz)))
         #return cost(self.net(features), targets) + 1*self.mmd(self.net(features), targets) + 0.1*torch.mean((torch.square(tpe) - torch.square(tpx) - torch.square(tpy) - torch.square(tpz)) - (torch.square(npe) - torch.square(npx) - torch.square(npy) - torch.square(npz)))
 
 '''

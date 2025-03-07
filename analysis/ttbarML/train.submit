@@ -1,0 +1,14 @@
+universe = vanilla
+executable = train.sh
+
+Log    = logs/$(Cluster)_$(Process).log
+Output = logs/$(Cluster)_$(Process).out
+Error  = logs/$(Cluster)_$(Process).err
+
+transfer_input_files = /scratch365/byates2/ttbarML/analysis/ttbarML/train.py
+
+request_memory = 15 Gb
+#request_cpus   = 1
++JobFlavour = "tomorrow"
+
+queue 1 

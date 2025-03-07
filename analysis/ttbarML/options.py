@@ -17,7 +17,8 @@ def commonOptions():
     parser.add_argument("--feature-division", type=int, default="1", help="Comma-separated of WC in the sample (by order)")
     parser.add_argument("--forceRebuild", action="store_true", default=False, help="Force reproduction of torch tensors from rootfiles")
     parser.add_argument("--norm", action="store_true", default=False, help="Force reproduction of torch tensors from rootfiles")
-    parser.add_argument("--plots", action="store_true", default=False, help="plots")
+    parser.add_argument("--plots", action="store_true", default=False, help="Plots")
+    parser.add_argument("--profile", action="store_true", default=False, help="Profile plots")
     parser.add_argument("--configuration-file", "-c", type=str, default=None, help="Load parameters from toml configuration file. The configuration file will be overriden by other command line options. The --name argument will always be taken from the command line option and the default")
     return parser
 
