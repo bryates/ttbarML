@@ -3,6 +3,7 @@ from torch.utils.data import DataLoader
 
 import torch.utils.data as data
 import numpy as np 
+import pandas as pd
 import awkward as ak
 
 import uproot
@@ -70,13 +71,16 @@ class eftDataLoader( data.Dataset ):
             Open root file in uproot and load `Events`
             This is where I should load the p4 for leps, jets, MET, and gen tops
             '''
-            tf = uproot.open( fil )
+            #tf = uproot.open( fil )
+            print(f'Loading {fil}')
+            tf = pd.read_parquet( fil )
             #events = NanoEventsFactory.from_root(fil, schemaclass=NanoAODSchema).events()
             #print(len(events))
-            events = tf["Events"]
+            events = tf#["Events"]
 
             if redoFeatures:
-                features =  events.arrays(self.feature_list, library='pandas').to_numpy()
+                features =  events.to_numpy()
+                #features =  events.arrays(self.feature_list, library='pandas').to_numpy()
                 outputs['features'] = np.append( outputs['features'], features, axis=0)
                 break
                 tops = events.GenPart

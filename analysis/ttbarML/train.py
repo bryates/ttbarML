@@ -15,6 +15,7 @@ import gc
 #import tracemalloc
 from torch.utils.data import DataLoader
 import numpy as np 
+import pandas as pd
 from tqdm import tqdm
 from torch import optim
 import matplotlib as mpl
@@ -209,7 +210,7 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     bins = np.linspace(-1, 1, 10)
     vals = test_feat.detach().cpu().numpy()[:,0]
     pred = net(test_input).detach().cpu().numpy()[:,0]
-    bins = np.linspace(np.min(np.mean(vals) - 2*np.std(vals)), np.max(np.mean(vals) + 2*np.std(vals)), 10)
+    bins = np.linspace(np.min(np.mean(vals) - 2*np.std(vals)), np.max(np.mean(vals) + 2*np.std(vals)), 100)
     bins = np.array([bins, bins])
     #sm_hist  = ax.scatter(test_feat.detach().cpu().numpy()[:,0], net(test_input).detach().cpu().numpy()[:,0],
     sm_hist  = ax.hist2d(test_feat.detach().cpu().numpy()[:,0], net(test_input).detach().cpu().numpy()[:,0],
@@ -587,6 +588,7 @@ def main():
     #parser.add_argument("--reload",  action='store_true', default=False, help="Force conversion of hdf to pytorch")
     files = "NAOD*"#"-00000_1016.root"
     files = "top_quark_reco_events.root"
+    files = "top_quarks.parquet"
     #files = "NAOD-00000_1016.root"
     device = 'cuda'
     name = ''
@@ -723,7 +725,7 @@ def main():
     dataloader     = DataLoader(  torch.cat([train_targ,train_input], dim=1)  , batch_size=arg['batch_size'], shuffle=True)
 
     #test  = torch.nn.functional.normalize(test[:])
-    optimizer = optim.Adam(model.net.parameters(), lr=arg['learning_rate'])#, weight_decay=1e-4)
+    optimizer = optim.Adam(model.net.parameters(), lr=arg['learning_rate'])#, weight_decay=1e-2)
     #optimizer = optim.SGD(model.net.parameters(), lr=arg.learning_rate, momentum=arg.momentum)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=arg['factor'], patience=arg['patience'])
     #loss_train = [model.cost_from_batch(train_targ, train_input, arg['device']).item()]
@@ -743,21 +745,30 @@ def main():
             features = features[:,feature_division:]
             optimizer.zero_grad()
             loss = model.cost_from_batch(targets, features, arg['device'])
-            #for i, activation in enumerate(activations):
-            #    # Count number of dead neurons (all zeros)
-            #    #dead_neurons = (activation == 0).sum().item()
-            #    dead_neurons = (activation.abs() < 0.01).sum().item()
-            #    total_neurons = activation.numel()
-            #    dead.append((dead_neurons, total_neurons))
-            #    #print(f"Layer {i+1}: {dead_neurons}/{total_neurons} dead neurons")
-            #print(loss.detach().cpu().numpy())
+            #if arg['profile']:
+            #    for i, activation in enumerate(activations):
+            #        # Count number of dead neurons (all zeros)
+            #        #dead_neurons = (activation == 0).sum().item()
+            #        dead_neurons = (activation.abs() < 0.01).sum().item()
+            #        total_neurons = activation.numel()
+            #        dead.append((dead_neurons, total_neurons))
+            #        #print(f"Layer {i+1}: {dead_neurons}/{total_neurons} dead neurons")
             loss.backward()
             optimizer.step()
         #loss_train.append( model.cost_from_batch(train_targ, train_input , arg['device']).item())
         #loss_test .append( model.cost_from_batch(test_targ , test_input,  arg['device']).item())
         scheduler.step(loss_train[epoch])
-        #if epoch%50==0:
-        #    if arg['profile']: print(f'Found {100 * np.sum([x for x,_ in dead[-1]]) / np.sum([y for _,y in dead[-1]])}% dead neurons!')
+        if epoch%50==0:
+            if arg['profile']:
+                with torch.no_grad():
+                    for i, activation in enumerate(activations):
+                        # Count number of dead neurons (all zeros)
+                        #dead_neurons = (activation == 0).sum().item()
+                        dead_neurons = (activation.abs() < 0.01).sum().item()
+                        total_neurons = activation.numel()
+                        dead.append((dead_neurons, total_neurons))
+                        #print(f"Layer {i+1}: {dead_neurons}/{total_neurons} dead neurons")
+                    print(f'Found {100 * np.sum([x for x,_ in dead]) / np.sum([y for _,y in dead])}% dead neurons!')
         #    save_and_plot( model.net, loss_test, loss_train, f"test_epoch_{epoch}", test_input, test_targ, feature_division, norm_test, norm_test_targ, show=True)
         if args.plots:
             with torch.no_grad():
@@ -765,6 +776,7 @@ def main():
                 loss_test .append( model.cost_from_batch(test_targ , test_input,  arg['device']).item())
                 if epoch%50==0: 
                     save_and_plot( model.net, loss_test, loss_train, f"test_epoch_{epoch}", test_input.detach(), test_targ.detach(), feature_division, norm_test.detach(), norm_test_targ.detach())
+                    save_and_plot( model.net, loss_test, loss_train, f"train_{epoch}", train_input.detach(), train_targ.detach(), feature_division, norm_test.detach(), norm_test_targ.detach(), show=False)
                     #print(optimizer.param_groups[0]['lr'])
         gc.collect()
         '''
