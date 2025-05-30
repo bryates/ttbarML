@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch 
+import torch.nn.init as init
 
 cost =  nn.MSELoss(reduction='mean')#reduction='sum')
 #cost =  nn.MSELoss(reduction='sum')
@@ -10,6 +11,7 @@ class Net(nn.Module):
         super().__init__()
         #initial_neurons = (features - feature_division)#//2
         initial_neurons = 128#(features - feature_division)*2
+        #initial_neurons = 32#(features - feature_division)*2
         self.main_module = nn.Sequential( 
             #nn.Linear(features, 32),
             #nn.ReLU(True),
@@ -22,26 +24,37 @@ class Net(nn.Module):
             nn.Linear(features-feature_division, initial_neurons),#32),  # Input layer with 27 inputs and 64 neurons
             #nn.BatchNorm1d(initial_neurons),
             #nn.Sigmoid(),          # Activation function
-            #nn.LeakyReLU(0.2),
-            nn.ReLU(),          # Activation function
+            nn.LeakyReLU(0.2),
+            #nn.ReLU(),          # Activation function
             nn.Linear(initial_neurons, initial_neurons//2),#32, 16),  # hidden layer with 32 neurons
             #nn.BatchNorm1d(initial_neurons//2),
             #nn.Sigmoid(),          # activation function
-            #nn.LeakyReLU(0.2),
-            nn.ReLU(),
+            nn.LeakyReLU(0.2),
+            #nn.ReLU(),
             nn.Linear(initial_neurons//2, initial_neurons//4),#32, 16),  # hidden layer with 32 neurons
             #nn.BatchNorm1d(initial_neurons//4),
             #nn.Sigmoid(),          # activation function
-            #nn.LeakyReLU(0.2),
-            nn.ReLU(),
+            nn.LeakyReLU(0.2),
+            #nn.ReLU(),
             nn.Linear(initial_neurons//4, feature_division), #16, feature_division)    # Output layer with 3 outputs (for the target values
         )
         self.main_module.to(device)
         self.main_module.type(torch.float64)
 
+        # Apply weight initialization
+        self.apply(self.init_weights)
 
     def forward(self, x):
         return self.main_module(x)
+
+    @staticmethod
+    def init_weights(m):
+        """Custom weight initialization"""
+        if isinstance(m, nn.Linear):
+            #init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')  # He initialization for ReLU
+            init.kaiming_normal_(m.weight, a=0.2, mode='fan_out', nonlinearity='leaky_relu')  
+            if m.bias is not None:
+                init.constant_(m.bias, 0)  # Biases set to zero
             
 
 class Model:
@@ -58,16 +71,17 @@ class Model:
 
     def gaussian_kernel(self, x, y, sigma=1.0):
         """Computes the Gaussian (RBF) kernel matrix."""
-        x_size = x.size(0)
-        y_size = y.size(0)
-        dim = x.size(1)
+        #x_size = x.size(0)
+        #y_size = y.size(0)
+        #dim = x.size(1)
         
-        x = x.unsqueeze(1)  # Shape: (x_size, 1, dim)
-        y = y.unsqueeze(0)  # Shape: (1, y_size, dim)
+        #x = x.unsqueeze(1)  # Shape: (x_size, 1, dim)
+        #y = y.unsqueeze(0)  # Shape: (1, y_size, dim)
         
-        squared_diff = (x - y).pow(2).sum(2)  # Squared Euclidean distance
+        squared_diff = (x - y).pow(2).sum()#2)  # Squared Euclidean distance
         return torch.exp(-squared_diff / (2 * sigma ** 2))
 
+    #@torch.jit.script
     def mmd(self, x, y, sigma=1.0):
         """Computes the Maximum Mean Discrepancy (MMD) between two sets of samples."""
         k_xx = self.gaussian_kernel(x, x, sigma).mean()
