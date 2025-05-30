@@ -59,7 +59,7 @@ class eftDataLoader( data.Dataset ):
             Reset
             '''
             print("Will redo tensor with input features")
-            outputs['features'        ] = np.empty( shape=(0, len(self.feature_list)), dtype=self.dtype)
+            outputs['features'        ] = None# np.empty( shape=(0, len(self.feature_list)), dtype=self.dtype)
 
         if not redoFeatures:
             return 
@@ -81,7 +81,10 @@ class eftDataLoader( data.Dataset ):
             if redoFeatures:
                 features =  events.to_numpy()
                 #features =  events.arrays(self.feature_list, library='pandas').to_numpy()
-                outputs['features'] = np.append( outputs['features'], features, axis=0)
+                if outputs['features'] is None:
+                    outputs['features'] = features
+                else:
+                    outputs['features'] = np.append( outputs['features'], features, axis=0)
                 break
                 tops = events.GenPart
                 tops = tops[np.abs(tops.pdgId)==6]
