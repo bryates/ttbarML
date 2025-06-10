@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import awkward as ak
 
-import uproot
 import torch
 import glob
 import tqdm
