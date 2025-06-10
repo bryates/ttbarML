@@ -10,8 +10,8 @@ class Net(nn.Module):
     def __init__(self, features, feature_division, device):
         super().__init__()
         #initial_neurons = (features - feature_division)#//2
-        initial_neurons = 128#(features - feature_division)*2
-        #initial_neurons = 32#(features - feature_division)*2
+        #initial_neurons = 128#(features - feature_division)*2
+        initial_neurons = 32#(features - feature_division)*2
         self.main_module = nn.Sequential( 
             #nn.Linear(features, 32),
             #nn.ReLU(True),
@@ -24,18 +24,18 @@ class Net(nn.Module):
             nn.Linear(features-feature_division, initial_neurons),#32),  # Input layer with 27 inputs and 64 neurons
             #nn.BatchNorm1d(initial_neurons),
             #nn.Sigmoid(),          # Activation function
-            nn.LeakyReLU(0.2),
-            #nn.ReLU(),          # Activation function
+            #nn.LeakyReLU(0.2),
+            nn.ReLU(),          # Activation function
             nn.Linear(initial_neurons, initial_neurons//2),#32, 16),  # hidden layer with 32 neurons
             #nn.BatchNorm1d(initial_neurons//2),
             #nn.Sigmoid(),          # activation function
-            nn.LeakyReLU(0.2),
-            #nn.ReLU(),
+            #nn.LeakyReLU(0.2),
+            nn.ReLU(),
             nn.Linear(initial_neurons//2, initial_neurons//4),#32, 16),  # hidden layer with 32 neurons
             #nn.BatchNorm1d(initial_neurons//4),
             #nn.Sigmoid(),          # activation function
-            nn.LeakyReLU(0.2),
-            #nn.ReLU(),
+            #nn.LeakyReLU(0.2),
+            nn.ReLU(),
             nn.Linear(initial_neurons//4, feature_division), #16, feature_division)    # Output layer with 3 outputs (for the target values
         )
         self.main_module.to(device)
