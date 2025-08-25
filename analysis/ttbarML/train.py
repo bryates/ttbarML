@@ -474,11 +474,21 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     #                   bins=res_bins, alpha=0.5, label=['pred', 'gen'], alpha=0.5)
     sm_hist  = ax.hist(1 - np.square(ypred - ytrue) / np.square(ypred - np.mean(ytrue)),
                        bins=bins, alpha=0.5)
-    ax.set_xlabel('R px', fontsize=12)
+    ax.set_xlabel('R^2 px', fontsize=12)
     #ax.legend()
     if show: plt.show()
     fig.savefig(f'ml_out/{label}/R_px.png')
     plt.clf()
+
+    res  = net(test_input).detach().cpu().numpy()
+    targ = test_feat.detach().cpu().numpy()
+    print(f'R^2: {1 - np.sum(np.square(res - targ)) / np.sum(np.square(targ - np.mean(targ)))}')
+
+    print(f'RMSE: {np.sqrt(np.mean(np.square(res[:,0] - targ[:,0])))}')
+    print(f'RMSE: {np.sqrt(np.mean(np.square(res[:,1] - targ[:,1])))}')
+    print(f'RMSE: {np.sqrt(np.mean(np.square(res[:,2] - targ[:,2])))}')
+    print(f'RMSE: {np.sqrt(np.mean(np.square(res[:,3] - targ[:,3])))}')
+    print(f'RMSE: {np.sqrt(np.mean(np.square(res[:,4] - targ[:,4])))}')
 
     plt.close()
     fig, ax = plt.subplots(1, 1, figsize=[12,7])
@@ -491,6 +501,7 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     if show: plt.show()
     fig.savefig(f'ml_out/{label}/mse_px.png')
     plt.clf()
+    print(f'R^2 x:  {1 - np.sum(np.square(res - targ)) / np.sum(np.square(targ - np.mean(targ)))}')
 
     plt.close()
     fig, ax = plt.subplots(1, 1, figsize=[12,7])
@@ -506,6 +517,7 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     if show: plt.show()
     fig.savefig(f'ml_out/{label}/mse_py.png')
     plt.clf()
+    print(f'R^2 y:  {1 - np.sum(np.square(res - targ)) / np.sum(np.square(targ - np.mean(targ)))}')
 
     plt.close()
     fig, ax = plt.subplots(1, 1, figsize=[12,7])
@@ -521,6 +533,7 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     if show: plt.show()
     fig.savefig(f'ml_out/{label}/mse_pz.png')
     plt.clf()
+    print(f'R^2 z:  {1 - np.sum(np.square(res - targ)) / np.sum(np.square(targ - np.mean(targ)))}')
 
     plt.close()
     fig, ax = plt.subplots(1, 1, figsize=[12,7])
@@ -536,6 +549,7 @@ def save_and_plot(net, loss_test, loss_train, label, test_input, test_feat, feat
     if show: plt.show()
     fig.savefig(f'ml_out/{label}/mse_energy.png')
     plt.clf()
+    print(f'R^2 e: {1 - np.sum(np.square(res - targ)) / np.sum(np.square(targ - np.mean(targ)))}')
 
     plt.close()
     
