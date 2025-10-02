@@ -2,7 +2,7 @@
 
 ## Skills
 ML: Deep Neural Network
-Python: PyTorch, pandas, numpy
+Python: PyTorch, pandas, numpy</br>
 Scalable deployment: Docker, AWS
 
 ## Executive Summary
