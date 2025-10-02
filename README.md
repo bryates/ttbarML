@@ -6,44 +6,41 @@ Python: PyTorch, pandas, numpy</br>
 Scalable deployment: Docker, AWS
 
 ## Executive Summary
-Processing research-level data can be time intensive and often requires selecting a handful of interesting metrics.
-Splitting the data into different buckets based on the desired metrics can result in decreased statistical sensitivity, as well as increased analysis time while researchers explore the sensitivity of various metrics.
-**Deep neural networks** (DNNs) allow us to instead pass the high-dimensional data directly to a model and retrieve accurate predictions.
-One area where DNNs can significantly improve analyses is in intermediate particle reconstruction.
-When certain particles decay, some of the information can be lost due to detector configurations and inefficiencies.
-DNNs can harness the concept of regression to learn how to properly predict these intermediate particles based solely on the available detector information.
-I simulated 100,000 particle decays, including the loss of momentum information due to particles known as neutrinos.
-I coded a DNN in PyTorch to take in this lossy final-state information, as well as the "truth-level" information of the particles I simulated before decay.
-The DNN was able to accurately reconstruct intermediate particle information with a coefficient of determination (R^2) of at last 0.9 for each dimension.
-The model was deployed in a **Docker** container using the EC2 service on **AWS**.
+Scientific data analysis often involves selecting a few key metrics from high-dimensional datasets, which can reduce statistical sensitivity and increase analysis time. 
+**Deep neural networks** (DNNs) offer a scalable alternative by learning directly from raw, high-dimensional data.
+In this project, I simulated 100,000 particle decays, including missing momentum due to neutrinos. 
+I built a DNN in **PyTorch** to reconstruct intermediate particles using only the observable final-state data. 
+The model achieved a coefficient of determination (R²) of at least 0.9 across all dimensions, demonstrating strong predictive performance.
+To ensure scalability, the model was deployed in a **Docker** container on **AWS** EC2.
 
 ## Business Problem
 How can scalable deep learning models accelerate scientific discovery and reduce computational costs in high-energy physics research?
 
 ## Methodology
-1. Developed a **DNN** using **PyTorch**
-    - Simulated particles and their decay products, including loss of information
-    - Split data into training and validation batches
-1. Train and validate the model
-    - Used the training set to training the model to preact the intermediate particles based only on the decay products
-    - Used the validation set to ensure the model can reliably predict data is has not seen before
-1. Deployed the model on AWS
+1. Model Development
+    - Simulated particle decays with missing information
+    - Built and trained a DNN using PyTorch
+1. Model Validation
+    - Evaluated performance on unseen validation data
+    - Achieved R<sup>2</sup> ≥ 0.9 across all dimensions
+1. Deployment
+    - Containerized the model with Docker
+    - Deployed on AWS EC2 for scalable inference
 
 ## Results & Recommendations
-We observe reliable reconstruction of intermediate particles, allowing for more accurate scientific research.
-The R^9 of 0.9 or greater on a dedicated validation set ensures the model is working robust, and we can trust the predictions it produces.
-I recommend analyzers begin to adopt methods such as these to improve the efficiency of scientific research.
-By offloading complex and mundane tasks like optimizing metric selection to ML models, we can provide the analyzers with more time to think about the "big picture".
-This optimization will help boost productivity and reduce the amount of time between research publications.
+The model reliably reconstructs intermediate particles, enabling more accurate and efficient scientific analyses. 
+By automating metric selection and reconstruction, researchers can focus on strategic insights rather than manual data wrangling.
+This approach can reduce time-to-publication and improve reproducibility in physics research. 
+I recommend integrating ML-based reconstruction into future analysis pipelines to streamline workflows and enhance discovery.
 
 A plot of the true x-axis momentum vs the reconstructed value. The thin line indicates the DNN is accurately reproducing the desired values.
 
 ![Plot of reconstructed vs true momentum in the x-direction](top_x-corr.png)
 
 ## Next Steps:
-1. Expand model to incorporate more information
-1. Implement in a sophisticated "simulation based inference" analysis instead of a traditional histogram approach
-1. Explore scalability of model on cloud platform
+1. Incorporate additional detector features
+1. Transition to simulation-based inference frameworks
+1. Benchmark scalability across cloud platforms
 
 ## 🌍 Industry Relevance
 While this project is rooted in particle physics, the techniques used—such as deep learning on high-dimensional data, feature selection, and model optimization—are directly applicable to industry challenges like:
